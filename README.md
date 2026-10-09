@@ -46,6 +46,14 @@ Apri lo sketch e modifica la sezione `CONFIGURAZIONE`:
    - Le date sono quelle della **raccolta**: il LED si accende la sera prima.
    - Per gli anni successivi basta aggiungere nuove righe ad `ECCEZIONI[]` e ricaricare.
 
+## Test rapido dell'hardware
+
+Prima dello sketch principale puoi caricare
+[`test_hardware/test_hardware.ino`](test_hardware/test_hardware.ino) (stesse impostazioni
+Wi-Fi, LED e pin). In circa un minuto, seguendo il Monitor seriale, verifica: LED spento
+(tipo di LED corretto), canali rosso/verde/blu, colori dei rifiuti, Wi-Fi e ora da
+internet, e infine il risveglio dal Deep Sleep dopo 15 secondi (ponticello RST ↔ D2).
+
 ## Caricamento (Arduino IDE)
 
 1. Preferenze → URL aggiuntive per il Gestore schede:
