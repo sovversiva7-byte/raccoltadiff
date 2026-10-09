@@ -36,9 +36,11 @@ Apri lo sketch e modifica la sezione `CONFIGURAZIONE`:
 2. Fascia oraria `ORA_INIZIO` / `ORA_FINE`.
 3. `ANODO_COMUNE` in base al tuo LED. Se i colori risultano "invertiti" (LED acceso
    quando dovrebbe essere spento) cambia questo valore.
-4. **Calendario**:
-   - `SETTIMANA[]`: cosa si raccoglie in ciascun giorno della settimana (contiene un
-     **esempio**, da sostituire).
+4. **Calendario**: è già inserito quello del Comune da **Ottobre a Dicembre 2026**
+   (in `ECCEZIONI[]`, un giorno per riga). Dopo il 31/12/2026 il LED non si accende
+   più finché non aggiungi le date del 2027.
+   - `SETTIMANA[]`: cosa si raccoglie in ciascun giorno della settimana (ora tutto
+     `NESSUNO`, perché il calendario non segue uno schema settimanale fisso).
    - `ECCEZIONI[]`: date precise che sostituiscono il giorno della settimana
      (festivi, `VETRO | INDUMENTI`, giorni senza raccolta con `NESSUNO`).
    - Le date sono quelle della **raccolta**: il LED si accende la sera prima.

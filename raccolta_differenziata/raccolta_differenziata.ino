@@ -91,15 +91,17 @@ const uint8_t NUM_TIPI = sizeof(COLORI) / sizeof(COLORI[0]);
 //    (il LED si accende la SERA PRIMA). Indice 0 = domenica ... 6 = sabato.
 //    Per piu' rifiuti nello stesso giorno usa |  es.  VETRO | INDUMENTI
 //
-//    >>> ESEMPIO: sostituiscilo con il calendario del tuo Comune <<<
+//    Il calendario del Comune non segue uno schema settimanale fisso (il giovedi'
+//    alterna Indifferenziato e Vetro, i festivi spostano le raccolte), quindi qui e'
+//    tutto NESSUNO e le date sono elencate una per una in ECCEZIONI qui sotto.
 const uint8_t SETTIMANA[7] = {
   /* domenica  */ NESSUNO,
-  /* lunedi    */ ORGANICO,
-  /* martedi   */ PLASTICA,
-  /* mercoledi */ CARTA,
-  /* giovedi   */ ORGANICO,
-  /* venerdi   */ VETRO,
-  /* sabato    */ INDIFFERENZIATO,
+  /* lunedi    */ NESSUNO,
+  /* martedi   */ NESSUNO,
+  /* mercoledi */ NESSUNO,
+  /* giovedi   */ NESSUNO,
+  /* venerdi   */ NESSUNO,
+  /* sabato    */ NESSUNO,
 };
 
 // 2) ECCEZIONI: date precise che SOSTITUISCONO il giorno della settimana
@@ -111,10 +113,107 @@ const uint8_t SETTIMANA[7] = {
 struct Eccezione { uint16_t anno; uint8_t mese; uint8_t giorno; uint8_t rifiuti; };
 
 const Eccezione ECCEZIONI[] = {
-  // >>> ESEMPI: sostituiscili con le date reali del tuo calendario <<<
-  // { 2026, 10, 16, VETRO | INDUMENTI },
-  // { 2026, 12, 25, NESSUNO },
-  // { 2026, 12, 26, ORGANICO },
+  // Calendario del Comune: Ottobre - Dicembre 2026
+  // --- Ottobre 2026 ---
+  { 2026, 10,  1, INDIFFERENZIATO },         // gio
+  { 2026, 10,  2, PLASTICA },                // ven
+  { 2026, 10,  3, ORGANICO },                // sab
+  { 2026, 10,  4, NESSUNO },                 // dom
+  { 2026, 10,  5, ORGANICO },                // lun
+  { 2026, 10,  6, CARTA },                   // mar
+  { 2026, 10,  7, ORGANICO },                // mer
+  { 2026, 10,  8, VETRO | INDUMENTI },       // gio
+  { 2026, 10,  9, PLASTICA },                // ven
+  { 2026, 10, 10, ORGANICO },                // sab
+  { 2026, 10, 11, NESSUNO },                 // dom
+  { 2026, 10, 12, ORGANICO },                // lun
+  { 2026, 10, 13, CARTA },                   // mar
+  { 2026, 10, 14, ORGANICO },                // mer
+  { 2026, 10, 15, INDIFFERENZIATO },         // gio
+  { 2026, 10, 16, PLASTICA },                // ven
+  { 2026, 10, 17, ORGANICO },                // sab
+  { 2026, 10, 18, NESSUNO },                 // dom
+  { 2026, 10, 19, ORGANICO },                // lun
+  { 2026, 10, 20, CARTA },                   // mar
+  { 2026, 10, 21, ORGANICO },                // mer
+  { 2026, 10, 22, VETRO },                   // gio
+  { 2026, 10, 23, PLASTICA },                // ven
+  { 2026, 10, 24, ORGANICO },                // sab
+  { 2026, 10, 25, NESSUNO },                 // dom
+  { 2026, 10, 26, ORGANICO },                // lun
+  { 2026, 10, 27, CARTA },                   // mar
+  { 2026, 10, 28, ORGANICO },                // mer
+  { 2026, 10, 29, INDIFFERENZIATO },         // gio
+  { 2026, 10, 30, PLASTICA },                // ven
+  { 2026, 10, 31, ORGANICO },                // sab
+
+  // --- Novembre 2026 ---
+  { 2026, 11,  1, NESSUNO },                 // dom
+  { 2026, 11,  2, ORGANICO },                // lun
+  { 2026, 11,  3, CARTA },                   // mar
+  { 2026, 11,  4, ORGANICO },                // mer
+  { 2026, 11,  5, VETRO | INDUMENTI },       // gio
+  { 2026, 11,  6, PLASTICA },                // ven
+  { 2026, 11,  7, ORGANICO },                // sab
+  { 2026, 11,  8, NESSUNO },                 // dom
+  { 2026, 11,  9, ORGANICO },                // lun
+  { 2026, 11, 10, CARTA },                   // mar
+  { 2026, 11, 11, ORGANICO },                // mer
+  { 2026, 11, 12, INDIFFERENZIATO },         // gio
+  { 2026, 11, 13, PLASTICA },                // ven
+  { 2026, 11, 14, ORGANICO },                // sab
+  { 2026, 11, 15, NESSUNO },                 // dom
+  { 2026, 11, 16, ORGANICO },                // lun
+  { 2026, 11, 17, CARTA },                   // mar
+  { 2026, 11, 18, ORGANICO },                // mer
+  { 2026, 11, 19, VETRO },                   // gio
+  { 2026, 11, 20, PLASTICA },                // ven
+  { 2026, 11, 21, ORGANICO },                // sab
+  { 2026, 11, 22, NESSUNO },                 // dom
+  { 2026, 11, 23, ORGANICO },                // lun
+  { 2026, 11, 24, CARTA },                   // mar
+  { 2026, 11, 25, ORGANICO },                // mer
+  { 2026, 11, 26, INDIFFERENZIATO },         // gio
+  { 2026, 11, 27, PLASTICA },                // ven
+  { 2026, 11, 28, ORGANICO },                // sab
+  { 2026, 11, 29, NESSUNO },                 // dom
+  { 2026, 11, 30, ORGANICO },                // lun
+
+  // --- Dicembre 2026 ---
+  { 2026, 12,  1, CARTA },                   // mar
+  { 2026, 12,  2, ORGANICO },                // mer
+  { 2026, 12,  3, VETRO | INDUMENTI },       // gio
+  { 2026, 12,  4, PLASTICA },                // ven
+  { 2026, 12,  5, ORGANICO },                // sab
+  { 2026, 12,  6, NESSUNO },                 // dom
+  { 2026, 12,  7, ORGANICO },                // lun
+  { 2026, 12,  8, NESSUNO },                 // mar
+  { 2026, 12,  9, CARTA },                   // mer
+  { 2026, 12, 10, INDIFFERENZIATO },         // gio
+  { 2026, 12, 11, PLASTICA },                // ven
+  { 2026, 12, 12, ORGANICO },                // sab
+  { 2026, 12, 13, NESSUNO },                 // dom
+  { 2026, 12, 14, ORGANICO },                // lun
+  { 2026, 12, 15, CARTA },                   // mar
+  { 2026, 12, 16, ORGANICO },                // mer
+  { 2026, 12, 17, VETRO },                   // gio
+  { 2026, 12, 18, PLASTICA },                // ven
+  { 2026, 12, 19, ORGANICO },                // sab
+  { 2026, 12, 20, NESSUNO },                 // dom
+  { 2026, 12, 21, ORGANICO },                // lun
+  { 2026, 12, 22, CARTA },                   // mar
+  { 2026, 12, 23, ORGANICO },                // mer
+  { 2026, 12, 24, INDIFFERENZIATO },         // gio
+  { 2026, 12, 25, NESSUNO },                 // ven
+  { 2026, 12, 26, ORGANICO },                // sab
+  { 2026, 12, 27, NESSUNO },                 // dom
+  { 2026, 12, 28, ORGANICO },                // lun
+  { 2026, 12, 29, PLASTICA },                // mar
+  { 2026, 12, 30, ORGANICO },                // mer
+  { 2026, 12, 31, VETRO },                   // gio
+
+  // Per il 2027 aggiungi qui le nuove date, es. { 2027,  1,  2, ORGANICO },
+
   { 0, 0, 0, 0 }   // fine lista - non cancellare
 };
 
