@@ -1,8 +1,8 @@
 # Promemoria Raccolta Differenziata (ESP8266)
 
-Un LED RGB sul frigorifero si accende ogni sera (default 19:00–22:00) con il colore del
-rifiuto da esporre per la raccolta del giorno dopo. L'ora arriva da internet (NTP, con
-cambio ora legale automatico). Fuori dalla fascia serale la scheda va in Deep Sleep.
+Un LED RGB sul frigorifero si accende ogni giorno nelle fasce orarie impostate (default
+13:00–14:00 e 19:00–22:00) con il colore del rifiuto da esporre per la raccolta del giorno dopo. L'ora arriva da internet (NTP, con
+cambio ora legale automatico). Fuori da queste fasce la scheda va in Deep Sleep.
 
 Sketch: [`raccolta_differenziata/raccolta_differenziata.ino`](raccolta_differenziata/raccolta_differenziata.ino)
 
@@ -33,7 +33,7 @@ Per svegliarsi da solo, il chip deve avere **GPIO16 collegato a RST**.
 Apri lo sketch e modifica la sezione `CONFIGURAZIONE`:
 
 1. `WIFI_SSID` / `WIFI_PASSWORD` (solo reti a 2,4 GHz: l'ESP8266 non vede il 5 GHz).
-2. Fascia oraria `ORA_INIZIO` / `ORA_FINE`.
+2. Fasce orarie in `FASCE[]`: una riga per fascia, es. `{ 13, 0, 14, 0 }` = 13:00–14:00.
 3. `ANODO_COMUNE` in base al tuo LED. Se i colori risultano "invertiti" (LED acceso
    quando dovrebbe essere spento) cambia questo valore.
 4. **Calendario**: è già inserito quello del Comune da **Ottobre a Dicembre 2026**
@@ -82,7 +82,7 @@ I colori si cambiano nella tabella `COLORI[]`.
 
 ## Note sull'alimentazione
 
-- Durante la fascia serale la scheda **resta sveglia** (il Deep Sleep spegne i pin e
+- Durante le fasce orarie la scheda **resta sveglia** (il Deep Sleep spegne i pin e
   quindi anche il LED), ma con il Wi-Fi spento.
 - Il Deep Sleep dura al massimo ~3,5 ore per volta: la scheda si risveglia, rilegge
   l'ora e torna a dormire fino alla sera.

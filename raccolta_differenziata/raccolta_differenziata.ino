@@ -3,10 +3,10 @@
  *
  * Cosa fa:
  *  - Si sveglia, si collega al Wi-Fi e legge l'ora esatta da internet (NTP, ora italiana con ora legale).
- *  - Nella fascia serale (default 19:00-22:00) accende il LED RGB con il colore del rifiuto
- *    da esporre per la raccolta di DOMANI. Se domani ci sono due rifiuti (es. Vetro + Indumenti)
+ *  - Nelle fasce orarie impostate (default 13:00-14:00 e 19:00-22:00) accende il LED RGB
+ *    con il colore del rifiuto da esporre per la raccolta di DOMANI. Se domani ci sono due rifiuti (es. Vetro + Indumenti)
  *    i colori si alternano.
- *  - Fuori dalla fascia serale (o se domani non c'e' raccolta) va in Deep Sleep.
+ *  - Fuori dalle fasce orarie (o se domani non c'e' raccolta) va in Deep Sleep.
  *
  * Collegamenti (vedi README.md):
  *  - LED Rosso -> D5 (GPIO14), Verde -> D6 (GPIO12), Blu -> D7 (GPIO13)
@@ -29,9 +29,15 @@
 const char* WIFI_SSID     = "IL_TUO_WIFI";
 const char* WIFI_PASSWORD = "LA_TUA_PASSWORD";
 
-// Fascia oraria in cui il LED e' acceso (ora locale italiana)
-const int ORA_INIZIO = 19, MINUTO_INIZIO = 0;   // 19:00
-const int ORA_FINE   = 22, MINUTO_FINE   = 0;   // 22:00 (metti 23 per arrivare alle 23:00)
+// Fasce orarie in cui il LED e' acceso (ora locale italiana).
+// Formato: { ora inizio, minuto inizio, ora fine, minuto fine }. Una riga per fascia:
+// per aggiungerne una basta aggiungere una riga, per toglierla basta cancellarla.
+struct Fascia { uint8_t oraInizio, minInizio, oraFine, minFine; };
+const Fascia FASCE[] = {
+  { 13, 0, 14, 0 },   // 13:00 - 14:00
+  { 19, 0, 22, 0 },   // 19:00 - 22:00 (metti 23 per arrivare alle 23:00)
+};
+const uint8_t NUM_FASCE = sizeof(FASCE) / sizeof(FASCE[0]);
 
 // Tipo di LED: true = anodo comune (pin lungo a 3V3), false = catodo comune (pin lungo a GND)
 const bool ANODO_COMUNE = false;
@@ -302,26 +308,34 @@ int minutiDelGiorno(time_t adesso) {
   return t.tm_hour * 60 + t.tm_min;
 }
 
-bool inFasciaSerale(time_t adesso) {
+bool inFascia(time_t adesso) {
   int m = minutiDelGiorno(adesso);
-  return m >= ORA_INIZIO * 60 + MINUTO_INIZIO && m < ORA_FINE * 60 + MINUTO_FINE;
+  for (uint8_t i = 0; i < NUM_FASCE; i++) {
+    if (m >= FASCE[i].oraInizio * 60 + FASCE[i].minInizio &&
+        m <  FASCE[i].oraFine   * 60 + FASCE[i].minFine) return true;
+  }
+  return false;
 }
 
-// Prossimo inizio della fascia serale (oggi se non e' ancora iniziata, altrimenti domani)
-time_t prossimoInizioFascia(time_t adesso) {
+// Orario di oggi (o di domani) alle ore:minuti indicati
+time_t orarioDelGiorno(time_t adesso, int giorniDopo, int ora, int minuto) {
   struct tm t;
   localtime_r(&adesso, &t);
-  t.tm_hour = ORA_INIZIO; t.tm_min = MINUTO_INIZIO; t.tm_sec = 0;
+  t.tm_mday += giorniDopo;
+  t.tm_hour = ora; t.tm_min = minuto; t.tm_sec = 0;
   t.tm_isdst = -1;
-  time_t inizio = mktime(&t);
-  if (inizio <= adesso) {
-    localtime_r(&adesso, &t);
-    t.tm_mday += 1;
-    t.tm_hour = ORA_INIZIO; t.tm_min = MINUTO_INIZIO; t.tm_sec = 0;
-    t.tm_isdst = -1;
-    inizio = mktime(&t);
+  return mktime(&t);
+}
+
+// Il prossimo inizio di una qualsiasi fascia (oggi se non e' ancora iniziata, altrimenti domani)
+time_t prossimoInizioFascia(time_t adesso) {
+  time_t prossimo = 0;
+  for (uint8_t i = 0; i < NUM_FASCE; i++) {
+    time_t inizio = orarioDelGiorno(adesso, 0, FASCE[i].oraInizio, FASCE[i].minInizio);
+    if (inizio <= adesso) inizio = orarioDelGiorno(adesso, 1, FASCE[i].oraInizio, FASCE[i].minInizio);
+    if (prossimo == 0 || inizio < prossimo) prossimo = inizio;
   }
-  return inizio;
+  return prossimo;
 }
 
 // ============================================================================
@@ -413,7 +427,7 @@ void setup() {
 void loop() {
   time_t adesso = time(nullptr);
 
-  if (inFasciaSerale(adesso)) {
+  if (inFascia(adesso)) {
     uint8_t rifiuti = rifiutiDiDomani(adesso);
     if (rifiuti != NESSUNO) {
       mostraRifiuti(rifiuti);   // resta sveglio con il LED acceso fino a fine fascia
