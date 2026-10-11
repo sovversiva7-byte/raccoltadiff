@@ -42,8 +42,9 @@ const uint8_t NUM_FASCE = sizeof(FASCE) / sizeof(FASCE[0]);
 // Tipo di LED: true = anodo comune (pin lungo a 3V3), false = catodo comune (pin lungo a GND)
 const bool ANODO_COMUNE = false;
 
-// Luminosita' massima (0-255). Abbassala se il LED e' troppo forte.
-const uint8_t LUMINOSITA = 255;
+// Luminosita' massima (0-255). Valori alti senza resistenze sul LED possono bloccare
+// la scheda (soprattutto col bianco, che accende tutti e tre i colori insieme).
+const uint8_t LUMINOSITA = 60;
 
 // Pin del LED (numeri GPIO): D5 = 14, D6 = 12, D7 = 13
 const uint8_t PIN_ROSSO = 14;
