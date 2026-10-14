@@ -82,6 +82,13 @@ I colori si cambiano nella tabella `COLORI[]`.
 
 ## Note sull'alimentazione
 
+- Per default (`USA_DEEP_SLEEP = false`) fuori dalle fasce la scheda **resta sveglia con il
+  Wi-Fi spento** e tiene il LED spento; rilegge l'ora da internet ogni 6 ore. In Deep Sleep
+  infatti i pin non sono più pilotati e su alcune schede il LED resta acceso (verde-azzurro).
+  Con `USA_DEEP_SLEEP = false` il filo RST ↔ D2 non serve.
+- `USA_DEEP_SLEEP = true` consuma meno, ma richiede resistenze da 10 kΩ tra D5/D6/D7 e GND
+  e il filo RST ↔ D2.
+
 - Durante le fasce orarie la scheda **resta sveglia** (il Deep Sleep spegne i pin e
   quindi anche il LED), ma con il Wi-Fi spento.
 - Il Deep Sleep dura al massimo ~3,5 ore per volta: la scheda si risveglia, rilegge

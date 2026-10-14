@@ -6,12 +6,13 @@
  *  - Nelle fasce orarie impostate (default 13:00-14:00 e 19:00-22:00) accende il LED RGB
  *    con il colore del rifiuto da esporre per la raccolta di DOMANI. Se domani ci sono due rifiuti (es. Vetro + Indumenti)
  *    i colori si alternano.
- *  - Fuori dalle fasce orarie (o se domani non c'e' raccolta) va in Deep Sleep.
+ *  - Fuori dalle fasce orarie (o se domani non c'e' raccolta) spegne LED e Wi-Fi
+ *    (oppure va in Deep Sleep, se USA_DEEP_SLEEP = true).
  *
  * Collegamenti (vedi README.md):
  *  - LED Rosso -> D5 (GPIO14), Verde -> D6 (GPIO12), Blu -> D7 (GPIO13)
  *  - Pin comune del LED -> GND (catodo comune) oppure 3V3 (anodo comune, NON 5V)
- *  - Ponticello per il risveglio: RST <-> GPIO16.
+ *  - Solo con USA_DEEP_SLEEP = true, ponticello per il risveglio: RST <-> GPIO16.
  *    ATTENZIONE: sulla D1 R2 formato Uno GPIO16 e' il pin serigrafato "D2",
  *    NON il pin "RX<-D0" (quello e' GPIO3 = RX seriale e il risveglio non funziona).
  *
@@ -53,6 +54,17 @@ const uint8_t PIN_BLU   = 13;
 
 // Se manca Wi-Fi o NTP riprova dopo questi secondi
 const uint32_t RIPROVA_SECONDI = 10 * 60;
+
+// Deep Sleep tra una fascia e l'altra.
+// false (consigliato): la scheda resta sveglia con il Wi-Fi spento e tiene i pin del LED
+//   a livello basso, cosi' il LED resta davvero spento. Il filo RST <-> D2 non serve.
+// true: consuma meno, ma in Deep Sleep i pin non sono piu' pilotati e su alcune schede
+//   il LED resta acceso (es. verde-azzurro). Usalo solo con resistenze da 10 kOhm
+//   tra D5, D6, D7 e GND, e con il filo RST <-> D2 collegato.
+const bool USA_DEEP_SLEEP = false;
+
+// Senza Deep Sleep: ogni quante ore rileggere l'ora da internet
+const uint32_t RISINCRONIZZA_ORE = 6;
 
 // Il timer del deep sleep e' impreciso (alcuni %): ci si sveglia qualche minuto prima
 // e si aspetta da svegli (con Wi-Fi spento) l'inizio della fascia.
@@ -346,6 +358,8 @@ time_t prossimoInizioFascia(time_t adesso) {
 bool sincronizzaOra() {
   Serial.printf("Connessione a %s", WIFI_SSID);
   WiFi.persistent(false);
+  WiFi.forceSleepWake();
+  delay(1);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -404,6 +418,8 @@ void stampaRifiuti(uint8_t rifiuti) {
 //  PROGRAMMA
 // ============================================================================
 
+uint32_t ultimaSincronizzazione = 0;   // millis() dell'ultima ora letta da internet
+
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -416,13 +432,34 @@ void setup() {
   if (!sincronizzaOra()) {
     segnalaErrore();
     spegniWifi();
-    deepSleepSecondi(RIPROVA_SECONDI);
+    if (USA_DEEP_SLEEP) deepSleepSecondi(RIPROVA_SECONDI);
+    Serial.printf("Riprovo tra %lu minuti\n", (unsigned long)(RIPROVA_SECONDI / 60));
+    delay(RIPROVA_SECONDI * 1000UL);
+    ESP.restart();
   }
   spegniWifi();   // l'orologio interno continua a funzionare anche senza Wi-Fi
+
+  ultimaSincronizzazione = millis();
 
   time_t adesso = time(nullptr);
   stampaOra(adesso);
   stampaRifiuti(rifiutiDiDomani(adesso));
+}
+
+// Fuori dalle fasce, senza Deep Sleep: LED spento (pin pilotati a LOW), Wi-Fi spento,
+// e ogni RISINCRONIZZA_ORE ore si rilegge l'ora da internet.
+void attesaDaSveglio() {
+  const uint32_t intervallo = RISINCRONIZZA_ORE * 3600UL * 1000UL;
+  if (millis() - ultimaSincronizzazione >= intervallo) {
+    if (sincronizzaOra()) {
+      ultimaSincronizzazione = millis();
+      stampaOra(time(nullptr));
+    } else {
+      ultimaSincronizzazione = millis() - intervallo + RIPROVA_SECONDI * 1000UL;  // riprova presto
+    }
+    spegniWifi();
+  }
+  delay(1000);
 }
 
 void loop() {
@@ -437,6 +474,11 @@ void loop() {
   }
 
   ledSpento();
+  if (!USA_DEEP_SLEEP) {
+    attesaDaSveglio();
+    return;
+  }
+
   time_t inizio = prossimoInizioFascia(adesso);
   uint32_t mancano = (uint32_t)(inizio - adesso);
 
